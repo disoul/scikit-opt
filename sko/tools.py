@@ -1,4 +1,6 @@
 import numpy as np
+import os
+from concurrent import futures
 
 
 def func_transformer(func):
@@ -32,7 +34,12 @@ def func_transformer(func):
     else:
         if func.__code__.co_argcount == 1:
             def func_transformed(X):
-                return np.array([func(x) for x in X])
+                output = []
+                with futures.ProcessPoolExecutor() as pool:
+                    for result in pool.map(func, X):
+                        output.append(result)
+
+                return np.array(output)
 
             return func_transformed
         elif func.__code__.co_argcount > 1:
